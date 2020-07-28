@@ -12,6 +12,7 @@ import conferenceRecordByAdmin from "../views/conferenceRecordByAdmin";
 import home from '../views/home';
 import applyConferenceByAdmin from "../views/applyConferenceByAdmin";
 import device from '../views/device'
+import employeeInfo from "../views/employeeInfo";
 
 
 Vue.use(VueRouter);
@@ -71,6 +72,16 @@ Vue.use(VueRouter);
           component:departmentInfo,
           meta:{
             title:'部门信息',
+            requireAuth:true,
+            role:['user']
+          }
+        },
+        {
+          path:"/employeeInfo",
+          name:'employeeInfo',
+          component:employeeInfo,
+          meta:{
+            title:'员工信息',
             requireAuth:true,
             role:['user']
           }
