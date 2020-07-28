@@ -471,7 +471,14 @@
                 this.dialogFormApply = true;
                 this.record.apply.roomId = row.roomId;
                 this.record.apply.roomSize = row.roomSize;
-                this.record.apply.depId = JSON.parse(Cookies.get("userInfo")).id
+
+                //员工还是部门用户
+                let isEmployee = JSON.parse(Cookies.get("userInfo")).depId;
+               if( isEmployee === null){
+                   this.record.apply.depId = JSON.parse(Cookies.get("userInfo")).id;
+               }else{
+                   this.record.apply.depId = isEmployee
+               }
             },
 
             tableRowClassName({row, rowIndex}) {

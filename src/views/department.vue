@@ -70,7 +70,12 @@
                     align="center">
             </el-table-column>
 
+            <el-table-column label="员工"  align="center">
+                <template slot-scope="scope">
+                    <el-button type="text" @click="lookEmployee(scope.row)">查看</el-button>
+                </template>
 
+            </el-table-column>
 
             <el-table-column
                     align="right" >
@@ -81,6 +86,17 @@
                             placeholder="输入部门名称或者编号搜索"/>
                 </template>
                 <template slot-scope="scope">
+
+                    <el-button
+                            size="medium"
+                            @click="handleaddEmployee(scope.row)"
+                            icon="el-icon-plus"
+                            circle
+                            type="success"
+
+                    ></el-button>
+
+
                     <el-button
                             size="medium"
                             @click="handleEdit(scope.$index, scope.row)"
@@ -107,6 +123,77 @@
                 </template>
             </el-table-column>
         </el-table>
+
+
+        <!--            查看员工的表格-->
+        <el-dialog title="员工" :visible.sync="dialogTableVisible">
+            <el-table
+                    :data="employees"
+                    align="center"
+                    :row-class-name="tableRowClassName"
+            >
+                <el-table-column
+                        prop="eno"
+                        label="工号" >
+                </el-table-column>
+                <el-table-column
+                        prop="ename"
+                        label="员工名字" >
+                </el-table-column>
+
+
+                <el-table-column  label="操作" align="center" >
+                    <template slot-scope="scope">
+
+                        <el-button
+                                size="medium"
+                                @click="handleEditEmployee(scope.row)"
+                                icon="el-icon-edit"
+                                circle
+                                type="warning"
+                                style="margin-right: 10px"
+                        ></el-button>
+
+                        <template>
+                            <el-popconfirm
+                                    title="确定删除该员工吗？"
+                                    @onConfirm="handleDeleteEmployee(scope.row)"
+                            >
+                                <el-button
+                                        slot="reference"
+                                        size="medium"
+                                        type="danger"
+                                        circle
+                                        icon="el-icon-delete"
+                                ></el-button>
+                            </el-popconfirm>
+                        </template>
+                    </template>
+                </el-table-column>
+
+            </el-table>
+        </el-dialog>
+
+        <!--            添加员工或者修改的表单-->
+        <el-dialog  :title="isUpdateEmployee" :visible.sync="dialogFormVisible">
+
+            <el-form :model="employeeForm" :rules="employeeFormRules" ref="employeeFormRules">
+                <el-form-item label="员工工号"  label-width="150px" prop="eno" >
+                    <el-input v-model="employeeForm.eno" autocomplete="off" placeholder="请输入员工工号" style="width: 300px"></el-input>
+                </el-form-item>
+                <el-form-item label="员工名字"  label-width="150px" prop="ename" >
+                    <el-input v-model="employeeForm.ename" autocomplete="off" placeholder="请输入员工名字" style="width: 300px"></el-input>
+                </el-form-item>
+                <el-form-item label="登录密码"  label-width="150px" prop="epassword" >
+                    <el-input v-model="employeeForm.epassword" autocomplete="off" placeholder="请输入员工密码" style="width: 300px"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button round @click="dialogFormVisible = false">取 消</el-button>
+                <el-button  round type="success" @click="addEmployee">确 定</el-button>
+            </div>
+        </el-dialog>
+
     </div>
 </template>
 
@@ -114,6 +201,107 @@
     export default {
         name: "department",
         methods: {
+
+            handleaddEmployee(row){
+                this.isUpdateEmployee = '添加员工';
+                this.employeeForm.depId = row.depId;
+                this.dialogFormVisible = true;
+            },
+
+            addEmployee() {
+                this.$refs['employeeFormRules'].validate((valid) => {
+                    if (valid) {
+                        let flag = this.employeeForm.eid;
+                        let _this = this;
+                        _this.axios.post("/employee/add", _this.employeeForm, {
+                            headers: {
+                                "Authorization": localStorage.getItem("token")
+                            }
+                        }).then(res => {
+                            if(flag === null || flag === '' ) {
+                                _this.$message.success("添加成功")
+                                _this.employeeForm = {
+                                    eid:'',
+                                    ename:'',
+                                    eno:'',
+                                    epassword:'',
+                                    depId:'',
+                                };
+
+                                _this.dialogFormVisible = false;
+                            }
+                            else {
+                                _this.$message.success("修改成功")
+                                //刷新表格
+                                _this.axios.get("/employee/getby/"+_this.employeeForm.depId,{
+                                    headers:{
+                                        "Authorization":localStorage.getItem("token")
+                                    }
+                                }).then(res=>{
+                                    _this.employees = res.data.data;
+                                });
+                                _this.employeeForm = {
+                                    eid:'',
+                                    ename:'',
+                                    eno:'',
+                                    epassword:'',
+                                    depId:'',
+                                };
+
+                                _this.dialogFormVisible = false;
+                            }
+
+                        })
+
+
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+
+            handleDeleteEmployee(row){
+                let _this = this;
+                _this.axios.delete("/employee/delete/"+row.eid,{
+                    headers: {
+                        "Authorization": localStorage.getItem("token")
+                    }
+                }).then(res=>{
+                    _this.$message.success("删除成功");
+                    //刷新表格
+                    _this.axios.get("/employee/getby/"+row.depId,{
+                        headers:{
+                            "Authorization":localStorage.getItem("token")
+                        }
+                    }).then(res=>{
+                        _this.employees = res.data.data;
+                    })
+                })
+            },
+
+            handleEditEmployee(row){
+                this.isUpdateEmployee = '修改员工信息';
+                let temp = JSON.stringify(row);
+                this.employeeForm = JSON.parse(temp);
+                this.employeeForm.epassword='';
+                this.dialogFormVisible = true;
+            },
+
+            lookEmployee(row){
+                let depId = row.depId;
+                let _this = this;
+                this.axios.get('/employee/getby/'+depId,{
+                    headers:{
+                        "Authorization":localStorage.getItem("token")
+                    }
+                }).then(res=>{
+                    _this.employees = res.data.data;
+                    _this.dialogTableVisible = true;
+                })
+
+            },
+
             closeDrawer(){
                 this.update=false;
                 //关闭抽屉时  把数据清空
@@ -242,11 +430,51 @@
         data() {
             return {
 
+                employeeFormRules:{
+                    eno: [
+                        {required: true, message: '请输入员工工号', trigger: 'blur'},
+                        {min: 5, max: 10, message: '长度在 5 到 10 个字符', trigger: 'blur'}
+                    ],
+                    ename: [
+                        {required: true, message: '请输入员工名字', trigger: 'blur'},
+                        {min: 3, max: 5, message: '长度在 3 到 8 个字符', trigger: 'blur'}
+                    ],
+                    epassword: [
+                        {required: true, message: '请输入密码', trigger: 'blur'},
+                        {min: 6, max: 15, message: '长度在 6 到 5 个字符', trigger: 'blur'}
+                    ],
+                },
+
+                employeeForm:{
+                    ename:'',
+                    eno:'',
+                    epassword:'',
+                    depId:'',
+                },
+
+                isUpdateEmployee:'添加员工',
+
+                dialogFormVisible:false,
+
+                employees:[
+                    {
+                        eid:'',
+                        eno:'00001',
+                        ename:'小明',
+                        epassword:'123456',
+                        depId:'',
+
+                    }
+                ],
+
+                dialogTableVisible:false,
+
                 //抽屉表单中更新还是添加部门的判断依据
                 update:false,
 
                 deps: [
                     {
+                        depId:'',
                         depNo: '002',
                         depName: '研发部',
                         depPersonCount: 23,

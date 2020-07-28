@@ -19,7 +19,7 @@
                     >
 
 
-                        <el-submenu index="1" :disabled="!isAdmin">
+                        <el-submenu index="1" :disabled="isAdmin">
                             <template slot="title">
                                 <i class="iconfont iconshenqing"></i>
                                 <span slot="title">会议室申请</span>
@@ -28,18 +28,18 @@
                             <el-menu-item index="/conferenceRecordByDep">查看记录</el-menu-item>
                         </el-submenu>
 
-                        <el-menu-item index="/department" :disabled="isAdmin">
+                        <el-menu-item index="/department" :disabled="!isAdmin">
                             <i class="iconfont iconbumen"></i>
                             <span slot="title">部门管理</span>
                         </el-menu-item>
 
-                        <el-menu-item index="/conference_room" :disabled="isAdmin">
+                        <el-menu-item index="/conference_room" :disabled="!isAdmin">
                                 <i class="iconfont iconhuiyishi"></i>
                                 <span slot="title">会议室管理</span>
 
                         </el-menu-item>
 
-                        <el-submenu index="4" :disabled="isAdmin">
+                        <el-submenu index="4" :disabled="!isAdmin">
                             <template slot="title">
                                 <i class="iconfont iconmenu-s"></i>
                                 <span slot="title">申请管理</span>
@@ -58,7 +58,8 @@
                     <el-dropdown @command="dropdown">
                         <i class="el-icon-s-tools" style="margin-right: 10px;"></i>
                         <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item v-if="isAdmin" command="部门信息">部门信息</el-dropdown-item>
+                            <el-dropdown-item v-if="!isEmployee" command="部门信息">部门信息</el-dropdown-item>
+                            <el-dropdown-item v-if="isEmployee" command="员工信息">员工信息</el-dropdown-item>
                             <el-dropdown-item command="退出">退出</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
@@ -93,9 +94,10 @@
                 test1: 1,
                 intelval: null,
                 levelList: null,
-                isAdmin:false,
+                isAdmin:true,
                 username:'王小虎',
                 activeIndex:'',
+                isEmployee:false,
 
             };
         },
@@ -105,8 +107,10 @@
             dropdown(data){
                 if(data==='退出')
                     this.logout()
-                else {
+                else if(data ==='部门信息'){
                     this.$router.push("/departmentInfo")
+                }else{
+                    this.$router.push("/employeeInfo")
                 }
             },
 
@@ -169,10 +173,18 @@
             //获取面包屑
             this.getBreadcrumb();
 
-           let userInfo = JSON.parse(Cookies.get("userInfo"))
+           let userInfo = JSON.parse(Cookies.get("userInfo"));
             //获取角色 侧边栏权限
-            if(userInfo.role=='user'){
+            if(userInfo.role === 'admin'){
                 this.isAdmin = true;
+            }else{
+                if(userInfo.depId !== undefined){
+                    this.isEmployee = true;
+                    this.isAdmin = false;
+                }else{
+                    this.isEmployee = false;
+                    this.isAdmin = false;
+                }
             }
             if(userInfo.username){
                 this.username = userInfo.username;

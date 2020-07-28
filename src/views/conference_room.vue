@@ -225,7 +225,7 @@
                 </el-table>
             </el-dialog>
 
-<!--            添加设备的表单-->
+<!--            添加设备或者修改的表单-->
             <el-dialog  :title="isUpdateDevice" :visible.sync="dialogFormVisible">
 
             <el-form :model="deviceForm" :rules="deviceFormRules" ref="deviceFormRules">
@@ -253,7 +253,7 @@
                 isUpdateDevice:'添加设备',
 
                 devices:[
-                    {"did":'',
+                    {   "did":'',
                        "dname":'',
                        "dnumber":'',
                         "roomId":'',

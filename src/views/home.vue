@@ -23,7 +23,7 @@
                             :closable="false">
                     </el-alert>
                     <el-alert
-                            title="部门可通过在线申请会议室的使用，由管理员进行审核"
+                            title="部门或者员工可通过在线申请会议室的使用，由管理员进行审核"
                             type="info"
                             show-icon
                             :closable="false">

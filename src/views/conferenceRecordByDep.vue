@@ -55,7 +55,7 @@
                                     size="mid"
                                     placeholder="输入主题、门牌号、楼层"/>
                         </template>
-                        <template slot-scope="scope">
+                        <template slot-scope="scope" v-if="!isEmployee">
                             <el-popconfirm
                                     title="确定删除该申请记录吗？"
                                     @onConfirm="handleDelete(scope.row)"
@@ -132,7 +132,7 @@
                                     size="mid"
                                     placeholder="输入主题、门牌号、楼层"/>
                         </template>
-                        <template slot-scope="scope">
+                        <template slot-scope="scope"  v-if="!isEmployee">
                             <el-button
                                     size="small"
                                     @click="handleEdit(scope.$index, scope.row)"
@@ -213,7 +213,7 @@
                                     size="mid"
                                     placeholder="输入主题、门牌号、楼层"/>
                         </template>
-                        <template slot-scope="scope">
+                        <template slot-scope="scope"  v-if="!isEmployee">
                             <el-popconfirm
                                     title="确定删除该申请记录吗？"
                                     @onConfirm="handleDelete(scope.row)"
@@ -252,6 +252,7 @@
         name: "ConferenceRecordByDep",
         data(){
             return{
+                isEmployee:false,
                 auditState: '1',
                 formData:[
                     {
@@ -370,22 +371,46 @@
             handleCurrentChange(currentPage) {
                 this.getRecords(this.depName, this.auditState, currentPage);
             },
+
+
+
         },
 
             created() {
                 //获取到depName
-                let depId = JSON.parse(Cookies.get("userInfo")).id;
-                let _this = this;
-                this.axios.get("/department/getby/" + depId, {
-                    headers: {
-                        "Authorization": localStorage.getItem("token")
-                    }
-                }).then(res => {
-                    _this.depName = res.data.data.depName;
-                    //先显示审核通过的
-                    _this.getRecords(_this.depName, _this.auditState, 1);
-                    _this.getTotal();
-                })
+                let depId = JSON.parse(Cookies.get("userInfo")).depId;
+
+                //部门用户
+                if (depId === undefined) {
+                    let id = JSON.parse(Cookies.get("userInfo")).id;
+                    let _this = this;
+                    this.axios.get("/department/getby/" + id, {
+                        headers: {
+                            "Authorization": localStorage.getItem("token")
+                        }
+                    }).then(res => {
+                        _this.depName = res.data.data.depName;
+                        //先显示审核通过的
+                        _this.getRecords(_this.depName, _this.auditState, 1);
+                        _this.getTotal();
+                    })
+                } else {
+                    this.isEmployee = true;
+                    //员工用户
+                    let _this = this;
+                    this.axios.get("/department/getby/" + depId, {
+                        headers: {
+                            "Authorization": localStorage.getItem("token")
+                        }
+                    }).then(res => {
+                        _this.depName = res.data.data.depName;
+                        //先显示审核通过的
+                        _this.getRecords(_this.depName, _this.auditState, 1);
+                        _this.getTotal();
+                    })
+
+
+                }
             }
     }
 </script>
