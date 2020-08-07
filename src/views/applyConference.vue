@@ -474,11 +474,12 @@
 
                 //员工还是部门用户
                 let isEmployee = JSON.parse(Cookies.get("userInfo")).depId;
-               if( isEmployee === null){
+               if( isEmployee === undefined){
                    this.record.apply.depId = JSON.parse(Cookies.get("userInfo")).id;
                }else{
                    this.record.apply.depId = isEmployee
                }
+
             },
 
             tableRowClassName({row, rowIndex}) {
