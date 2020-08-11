@@ -58,7 +58,7 @@
                     <el-dropdown @command="dropdown">
                         <i class="el-icon-s-tools" style="margin-right: 10px;"></i>
                         <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item v-if="!isEmployee" command="部门信息">部门信息</el-dropdown-item>
+                            <el-dropdown-item v-if="isDep" command="部门信息">部门信息</el-dropdown-item>
                             <el-dropdown-item v-if="isEmployee" command="员工信息">员工信息</el-dropdown-item>
                             <el-dropdown-item command="退出">退出</el-dropdown-item>
                         </el-dropdown-menu>
@@ -98,6 +98,7 @@
                 username:'王小虎',
                 activeIndex:'',
                 isEmployee:false,
+                isDep:false,
 
             };
         },
@@ -181,9 +182,11 @@
                 if(userInfo.depId !== undefined){
                     this.isEmployee = true;
                     this.isAdmin = false;
+                    this.isDep = false;
                 }else{
                     this.isEmployee = false;
                     this.isAdmin = false;
+                    this.isDep = true;
                 }
             }
             if(userInfo.username){
