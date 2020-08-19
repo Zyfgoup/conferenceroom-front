@@ -24,8 +24,11 @@ export default new Vuex.Store({
       //不能存对象 只能转化成json
       sessionStorage.setItem("userInfo",JSON.stringify(userInfo));
 
+      let millisecond = new Date().getTime();
+      let expiresTime = new Date(millisecond + 60*60*24*6 *1000 );
+
       //设置7天 与token有效期一样
-      Cookies.set("userInfo",JSON.stringify(userInfo),{ expires: 7 });
+      Cookies.set("userInfo",JSON.stringify(userInfo),{ expires: expiresTime });
 
     },
     REMOVE_INFO:(state)=>{
